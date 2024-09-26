@@ -30,4 +30,9 @@ public class UserServiceImpl implements UserService {
 
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), mapAuthorities(user.getRoles()));
     }
+
+    @Override
+    public List<User> findByLastname(String lastName) {
+        return userRepository.findByLastname(lastName);
+    }
 }

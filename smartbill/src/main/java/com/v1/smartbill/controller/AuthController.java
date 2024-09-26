@@ -4,6 +4,7 @@ package com.v1.smartbill.controller;
 import com.v1.smartbill.dto.AuthResponse;
 import com.v1.smartbill.dto.LoginDto;
 import com.v1.smartbill.dto.RegisterDto;
+import com.v1.smartbill.dto.RegisterResponse;
 import com.v1.smartbill.model.Role;
 import com.v1.smartbill.model.User;
 import com.v1.smartbill.repository.IRoleRepository;
@@ -17,15 +18,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 
 @RestController
 @RequestMapping("api/auth/")
+//@CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
     private AuthenticationManager authenticationManager;
     private PasswordEncoder passwordEncoder;
@@ -42,9 +41,9 @@ public class AuthController {
         this.userRepository = userRepository;
     }
     @PostMapping("register")
-    public ResponseEntity<String> register(@RequestBody RegisterDto request){
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterDto request){
         if (userRepository.existsByUsername(request.getUsername())){
-            return new ResponseEntity<>("el usuario no existe", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<RegisterResponse>( new RegisterResponse("El usuario no existe"), HttpStatus.BAD_REQUEST);
         }
         User user = new User();
         user.setUsername(request.getUsername());
@@ -56,7 +55,7 @@ public class AuthController {
         Role role = roleRepository.findByName("USER").get();
         user.setRoles(Collections.singletonList(role));
         userRepository.save(user);
-        return new ResponseEntity<>("Registro existoso", HttpStatus.CREATED);
+        return new ResponseEntity<RegisterResponse>( new RegisterResponse("El registro fue exitoso") ,HttpStatus.CREATED);
     }
 
     @PostMapping("register/admin")

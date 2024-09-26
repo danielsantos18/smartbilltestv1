@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/smartphone/")
+//@CrossOrigin(origins = "http://localhost:4200")
 public class SmartPhoneController {
 
     private SmartPhoneServiceImpl phoneService;
@@ -21,7 +22,7 @@ public class SmartPhoneController {
         this.phoneService = phoneService;
     }
 
-    //Petición para crear un  celular
+    //Petición para crear
     @PostMapping(value = "save", headers = "Accept=application/json")
     public void crearCelular(@RequestBody SmartPhone smartPhone) {
         phoneService.create(smartPhone);
@@ -33,19 +34,19 @@ public class SmartPhoneController {
         return phoneService.readAll();
     }
 
-    //Petición para obtener celular mediante "ID"
+    //Petición para obtener mediante "ID"
     @GetMapping(value = "listId/{id}", headers = "Accept=application/json")
     public Optional<SmartPhone> obtenerCelularPorId(@PathVariable Long id) {
         return phoneService.readOne(id);
     }
 
-    //Petición para actualizar un celular
+    //Petición para actualizar
     @PutMapping(value = "update/{id}", headers = "Accept=application/json")
     public void actualizarCelular(@PathVariable Long id , @Valid @RequestBody SmartPhone smartPhone) {
         phoneService.update(id,smartPhone);
     }
 
-    //Petición para eliminar un celular por "Id"
+    //Petición para eliminar por "Id"
     @DeleteMapping(value = "delete/{id}", headers = "Accept=application/json")
     public void eliminarCelular(@PathVariable Long id) {
         phoneService.delete(id);
