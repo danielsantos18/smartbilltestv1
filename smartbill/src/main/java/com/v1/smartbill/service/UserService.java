@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface UserService extends UserDetailsService {
     List<User> findByLastname(String lastName);
+
 }

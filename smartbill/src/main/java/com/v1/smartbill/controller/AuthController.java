@@ -11,6 +11,7 @@ import com.v1.smartbill.repository.IRoleRepository;
 import com.v1.smartbill.repository.IUserRepository;
 import com.v1.smartbill.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/auth/")
@@ -41,45 +43,79 @@ public class AuthController {
         this.userRepository = userRepository;
     }
     @PostMapping("register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterDto request){
-        if (userRepository.existsByUsername(request.getUsername())){
-            return new ResponseEntity<RegisterResponse>( new RegisterResponse("El usuario no existe"), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<RegisterResponse> registerUser(@RequestBody RegisterDto request) {
+        try {
+            if (userRepository.existsByUsername(request.getUsername()) || userRepository.existsByEmail(request.getEmail())) {
+                return new ResponseEntity<>(new RegisterResponse("El usuario o correo ya existen"), HttpStatus.BAD_REQUEST);
+            }
+
+            User user = new User();
+            user.setUsername(request.getUsername());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setEmail(request.getEmail());
+            user.setFirstname(request.getFirstname());
+            user.setLastname(request.getLastname());
+            user.setPhone(request.getPhone());
+
+            Role role = roleRepository.findByName("USER").orElseThrow(() -> new Exception("Rol no encontrado"));
+            user.setRoles(Collections.singletonList(role));
+
+            userRepository.save(user);
+            return new ResponseEntity<>(new RegisterResponse("El registro fue exitoso"), HttpStatus.CREATED);
+
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(new RegisterResponse("Error de integridad de datos: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new RegisterResponse("Error en el registro: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEmail(request.getEmail());
-        user.setFirstname(request.getFirstname());
-        user.setLastname(request.getLastname());
-        user.setPhone(request.getPhone());
-        Role role = roleRepository.findByName("USER").get();
-        user.setRoles(Collections.singletonList(role));
-        userRepository.save(user);
-        return new ResponseEntity<RegisterResponse>( new RegisterResponse("El registro fue exitoso") ,HttpStatus.CREATED);
     }
 
+
     @PostMapping("register/admin")
-    public ResponseEntity<String> registerAdmin(@RequestBody RegisterDto request){
-        if (userRepository.existsByUsername(request.getUsername())){
-            return new ResponseEntity<>("el usuario no existe", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<RegisterResponse> registerAdmin(@RequestBody RegisterDto request) {
+        try {
+            // Verifica si el usuario ya existe por nombre de usuario
+            Optional<User> existingUserOpt = userRepository.findByUsername(request.getUsername());
+
+            User user;
+            if (existingUserOpt.isPresent()) {
+                // Si el usuario existe, se actualizan sus roles
+                user = existingUserOpt.get();
+                Role adminRole = roleRepository.findByName("ADMIN").orElseThrow(() -> new Exception("Rol no encontrado"));
+
+                // Agrega el rol de ADMIN si no lo tiene ya
+                if (!user.getRoles().contains(adminRole)) {
+                    user.getRoles().add(adminRole);
+                }
+
+                userRepository.save(user);
+                return new ResponseEntity<>(new RegisterResponse("Roles actualizados para el usuario existente"), HttpStatus.OK);
+            } else {
+                // Si el usuario no existe, se crea uno nuevo
+                user = new User();
+                user.setUsername(request.getUsername());
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                user.setEmail(request.getEmail());
+                user.setFirstname(request.getFirstname());
+                user.setLastname(request.getLastname());
+                user.setPhone(request.getPhone());
+
+                Role role = roleRepository.findByName("ADMIN").orElseThrow(() -> new Exception("Rol no encontrado"));
+                user.setRoles(Collections.singletonList(role));
+
+                userRepository.save(user);
+                return new ResponseEntity<>(new RegisterResponse("El registro fue exitoso"), HttpStatus.CREATED);
+            }
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(new RegisterResponse("Error de integridad de datos: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new RegisterResponse("Error en el registro: Faltan datos"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEmail(request.getEmail());
-        user.setFirstname(request.getFirstname());
-        user.setLastname(request.getLastname());
-        user.setPhone(request.getPhone());
-        Role role = roleRepository.findByName("ADMIN").get();
-        user.setRoles(Collections.singletonList(role));
-        userRepository.save(user);
-        return new ResponseEntity<>("Registro existoso", HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto request) {
         try {
-
             //1. Session authenticationManager
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     request.getUsername(), request.getPassword()));

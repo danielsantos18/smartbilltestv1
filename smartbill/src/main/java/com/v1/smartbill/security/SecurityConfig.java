@@ -52,6 +52,8 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "api/auth/register/admin").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "api/auth/user/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "api/smartphone/save").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "api/smartphone/update").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "api/smartphone/delete/**").hasAuthority("ADMIN")
