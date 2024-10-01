@@ -1,0 +1,53 @@
+<mat-toolbar>
+    <button mat-icon-button *ngIf="sidenav.mode === 'over'" (click)="sidenav.toggle()">
+        <mat-icon *ngIf="!sidenav.opened">
+            menu
+        </mat-icon>
+        <mat-icon *ngIf="sidenav.opened">
+            close
+        </mat-icon>
+    </button>
+    <span>Dashboard</span>
+
+</mat-toolbar>
+
+<mat-sidenav-container class="example-container">
+    <mat-sidenav class="mat-elevation-z8" #sidenav="matSidenav" mode="side" opened>
+        <img class="avatar mat-elevation-z8"
+            src="https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+            alt="">
+        <h4 class="name">Daniel Santos</h4>
+        <p class="designation">Administrador</p>
+
+        <mat-divider></mat-divider>
+
+        <button mat-button class="menu-button" routerLink="/dashboard/product/create">
+            <mat-icon>person</mat-icon>
+            <span>Crear</span>
+        </button>
+        <button mat-button class="menu-button" routerLink="/dashboard/product/list">
+            <mat-icon>person</mat-icon>
+            <span>Lista</span>
+        </button>
+        <button mat-button class="menu-button" routerLink="/dashboard/product/edit/:id">
+            <mat-icon>person</mat-icon>
+            <span>Editar</span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <button mat-button class="menu-button" (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span><a>Salir</a></span>
+        </button>
+
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+
+        <div class="content mat-elevation-z8">
+            <router-outlet></router-outlet>
+        </div>
+
+    </mat-sidenav-content>
+</mat-sidenav-container>

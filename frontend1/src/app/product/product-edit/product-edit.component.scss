@@ -1,0 +1,42 @@
+.edit-user-card {
+    max-width: 800px; /* Ancho más grande */
+    margin: 20px; /* Margen general, no centrado */
+    padding: 30px; /* Padding interno */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+    border-radius: 8px; /* Bordes redondeados */
+    background-color: #f9f9f9; /* Color de fondo más suave */
+}
+
+.form-group {
+    display: flex; /* Usar flexbox */
+    flex-direction: column; /* Colocar en columna */
+    margin-bottom: 20px; /* Espacio entre filas */
+}
+
+.label {
+    font-weight: bold; /* Negrita para los labels */
+    margin-bottom: 8px; /* Espacio entre el label y el input */
+}
+
+.flex-item {
+    margin-bottom: 15px; /* Espacio entre los inputs */
+}
+
+.button-group {
+    display: flex; /* Usar flexbox */
+    justify-content: flex-start; /* Alinear botones a la izquierda */
+    margin-top: 20px; /* Margen superior */
+}
+
+button {
+    padding: 10px 15px; /* Padding interno en los botones */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados en los botones */
+    cursor: pointer; /* Cambiar cursor a puntero */
+    transition: background-color 0.3s; /* Transición para el color de fondo */
+    margin-right: 15px; /* Espacio entre los botones */
+}
+
+button:last-child {
+    margin-right: 0; /* Sin margen a la derecha en el último botón */
+}

@@ -1,0 +1,26 @@
+<mat-card class="user-form-card">
+  <mat-card-header>
+    <mat-card-title>Editar Producto</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form (ngSubmit)="onSubmit()" #userForm="ngForm">
+
+
+      <mat-form-field appearance="fill">
+        <mat-label>Marca</mat-label>
+        <input matInput required [(ngModel)]="product.mark" name="mark">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Precio</mat-label>
+        <input matInput [(ngModel)]="product.price" name="price">
+      </mat-form-field>
+
+      <mat-card-actions>
+        <button mat-raised-button color="primary" type="submit">Actualizar Producto</button>
+        <button mat-raised-button color="warn">Cancelar</button>
+      </mat-card-actions>
+    </form>
+  </mat-card-content>
+</mat-card>
