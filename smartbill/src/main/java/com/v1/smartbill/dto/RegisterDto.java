@@ -2,6 +2,8 @@ package com.v1.smartbill.dto;
 
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class RegisterDto {
     private String username;
@@ -10,4 +12,5 @@ public class RegisterDto {
     private String lastname;
     private String email;
     private String phone;
+    private Date birthdate;
 }

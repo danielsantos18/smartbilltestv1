@@ -44,8 +44,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain web(HttpSecurity http) throws Exception {
+    public SecurityFilterChain web(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configura CORS aquí
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -57,12 +58,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "api/smartphone/save").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "api/smartphone/update").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "api/smartphone/delete/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "api/smartphone/list").hasAnyAuthority("ADMIN" , "USER")
-                        .requestMatchers(HttpMethod.GET, "api/smartphone/listId/**").hasAnyAuthority("ADMIN" , "USER")
+                        .requestMatchers(HttpMethod.GET, "api/smartphone/list").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.GET, "api/smartphone/listId/**").hasAnyAuthority("ADMIN", "USER")
                         .anyRequest().authenticated());
 
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

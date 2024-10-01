@@ -10,6 +10,7 @@ import com.v1.smartbill.model.User;
 import com.v1.smartbill.repository.IRoleRepository;
 import com.v1.smartbill.repository.IUserRepository;
 import com.v1.smartbill.security.JwtTokenProvider;
+import com.v1.smartbill.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,21 +28,23 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/auth/")
-//@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
     private AuthenticationManager authenticationManager;
     private PasswordEncoder passwordEncoder;
     private IRoleRepository roleRepository;
     private IUserRepository userRepository;
     private JwtTokenProvider jwtTokenProvider;
+    private UserService userService;
     @Autowired
 
-    public AuthController(JwtTokenProvider jwtTokenProvider, AuthenticationManager authenticationManager, IRoleRepository roleRepository, PasswordEncoder passwordEncoder, IUserRepository userRepository) {
+    public AuthController(JwtTokenProvider jwtTokenProvider, UserService userService, AuthenticationManager authenticationManager, IRoleRepository roleRepository, PasswordEncoder passwordEncoder, IUserRepository userRepository) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
     @PostMapping("register")
     public ResponseEntity<RegisterResponse> registerUser(@RequestBody RegisterDto request) {
@@ -56,9 +60,10 @@ public class AuthController {
             user.setFirstname(request.getFirstname());
             user.setLastname(request.getLastname());
             user.setPhone(request.getPhone());
+            user.setBirthdate(request.getBirthdate());
 
-            Role role = roleRepository.findByName("USER").orElseThrow(() -> new Exception("Rol no encontrado"));
-            user.setRoles(Collections.singletonList(role));
+            Role roleUser = roleRepository.findByName("USER").orElseThrow(() -> new Exception("Rol no encontrado"));
+            user.setRoles(Collections.singletonList(roleUser));
 
             userRepository.save(user);
             return new ResponseEntity<>(new RegisterResponse("El registro fue exitoso"), HttpStatus.CREATED);
@@ -116,17 +121,27 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto request) {
         try {
-            //1. Session authenticationManager
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    request.getUsername(), request.getPassword()));
+            // 1. Session authenticationManager
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(), request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            //2. Validar token
+            // 2. Validar token
             String token = jwtTokenProvider.generateToken(authentication);
-            return new ResponseEntity<>(new AuthResponse(token), HttpStatus.OK);
+            Optional<User> userOpt = userService.findByUsername(request.getUsername());
 
-        }catch (Exception e) {
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                AuthResponse authResponse = new AuthResponse(token, user.getUsername(), user.getRoles());
+                return new ResponseEntity<>(authResponse, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
+
 }

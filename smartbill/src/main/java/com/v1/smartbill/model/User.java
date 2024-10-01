@@ -1,5 +1,6 @@
 package com.v1.smartbill.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,8 @@ public class User  {
     private String lastname;
     private String email;
     private String phone;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private Date birthdate;
 
     @JsonManagedReference
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
